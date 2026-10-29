@@ -14,6 +14,8 @@ jobs:
           mkdir proj
           base64 -d payload.txt > proj.zip
           unzip -q proj.zip -d proj
+          grep versionName proj/app/build.gradle.kts
+          grep -q "0.2.0-phase2" proj/app/build.gradle.kts
       - name: 下载 llama.cpp
         run: git clone --depth 1 --branch b11989 https://github.com/ggml-org/llama.cpp proj/app/src/main/cpp/llama.cpp
       - uses: actions/setup-java@v4
@@ -30,8 +32,9 @@ jobs:
           gradle-version: 8.7
       - run: gradle assembleDebug --no-daemon --stacktrace
         working-directory: proj
+      - run: unzip -l proj/app/build/outputs/apk/debug/app-debug.apk | grep -i "\.so"
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp proj/app/build/outputs/apk/debug/app-debug.apk AI-Hangout.apk
-          gh release create "build-${{ github.run_number }}" AI-Hangout.apk --title "AI Hangout phase2 #${{ github.run_number }}" --notes "debug apk"
+          cp proj/app/build/outputs/apk/debug/app-debug.apk AI-Hangout-phase2-b${{ github.run_number }}.apk
+          gh release create "build-${{ github.run_number }}" AI-Hangout-phase2-b${{ github.run_number }}.apk --title "PHASE2 NEW #${{ github.run_number }}" --notes "debug apk"

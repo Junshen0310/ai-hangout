@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           mkdir proj
-          base64 -d payload.txt > proj.zip
+          base64 -d payload2.txt > proj.zip
           unzip -q proj.zip -d proj
           grep versionName proj/app/build.gradle.kts
           grep -q "0.2.0-phase2" proj/app/build.gradle.kts

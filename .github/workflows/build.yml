@@ -12,10 +12,10 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           mkdir proj
-          base64 -d payload2.txt > proj.zip
+          base64 -d payload3.txt > proj.zip
           unzip -q proj.zip -d proj
-          grep versionName proj/app/build.gradle.kts
           grep -q "0.2.0-phase2" proj/app/build.gradle.kts
+          grep -c algorithm proj/app/src/main/cpp/engine.cpp
       - name: 下载 llama.cpp
         run: git clone --depth 1 --branch b11989 https://github.com/ggml-org/llama.cpp proj/app/src/main/cpp/llama.cpp
       - uses: actions/setup-java@v4
@@ -30,8 +30,14 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.7
-      - run: gradle assembleDebug --no-daemon --stacktrace
+      - name: 编译
+        run: gradle assembleDebug --no-daemon --stacktrace 2>&1 | tee ../build.log
         working-directory: proj
+      - name: 错误摘要
+        if: failure()
+        run: |
+          echo "=== 错误摘要 ==="
+          grep -n -E "error:|FAILED:|fatal error|undefined reference|What went wrong" build.log | head -40
       - run: unzip -l proj/app/build/outputs/apk/debug/app-debug.apk | grep -i "\.so"
       - env:
           GH_TOKEN: ${{ github.token }}

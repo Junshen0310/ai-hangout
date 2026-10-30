@@ -14,6 +14,7 @@ jobs:
           mkdir proj
           base64 -d payload3.txt > proj.zip
           unzip -q proj.zip -d proj
+          find proj -type f -exec touch {} +
           grep -q "0.2.0-phase2" proj/app/build.gradle.kts
       - name: 下载 llama.cpp
         run: git clone --depth 1 --branch b11989 https://github.com/ggml-org/llama.cpp proj/app/src/main/cpp/llama.cpp

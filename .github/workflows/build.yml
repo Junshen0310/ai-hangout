@@ -12,9 +12,17 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           mkdir proj
-          P=$(ls payload*.txt | sort -V | tail -1)
-          echo "使用项目文件：$P"
-          base64 -d "$P" > proj.zip
+          ls -la
+          best=""; bestv=-1
+          for f in payload*.txt; do
+            base64 -d "$f" > t.zip 2>/dev/null || continue
+            v=$(unzip -p t.zip app/build.gradle.kts 2>/dev/null | grep -oP 'versionCode = \K[0-9]+' | head -1)
+            v=${v:-0}
+            echo "候选：$f -> versionCode $v"
+            if [ "$v" -gt "$bestv" ]; then best="$f"; bestv=$v; fi
+          done
+          echo "使用项目文件：$best (versionCode $bestv)"
+          base64 -d "$best" > proj.zip
           unzip -q proj.zip -d proj
           find proj -type f -exec touch {} +
           grep versionName proj/app/build.gradle.kts
